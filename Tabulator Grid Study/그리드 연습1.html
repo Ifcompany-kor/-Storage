@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>그리드 연습1</title>
+</head>
+<body>
+	<div id="GridStudyTable"></div>
+
+	<button onclick="그리드_프로퍼티()">그리드_프로퍼티</button>
+	<button onclick="그리드_셀렉트없애기()">그리드_셀렉트없애기</button>
+	<button onclick="그리드_행추가()">그리드_행추가</button>
+<link href="https://unpkg.com/tabulator-tables@4.8.4/dist/css/tabulator_modern.min.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8.4/dist/js/tabulator.min.js"></script>
+
+<script type="text/javascript">
+var tabledata = [
+ 	{num:1,companyCode:"100",companyName:"할로윈",deptCode:"200",deptName:"루돌프"}
+ ];
+
+ for (var i = 1; i < 10000; i++) {
+ 	var data = {num:i+1,companyCode:"100",companyName:"할로윈",deptCode:"200",deptName:"루돌프"};
+
+ 	tabledata.push(data);
+ }
+
+var table = new Tabulator("#GridStudyTable", {
+	// JSON 데이터를 그리드에 렌더링 한다.
+	data:tabledata,
+	// 그리드를 화면에 꽉차게 해주는 옵션
+	layout:"fitColumns",
+	// 페이징 옵션
+	pagination:"local",
+	paginationSize:20,
+	paginationAddRow : "table",
+	// 그리드의 높이값을 지정하는 옵션
+    height:"311px",
+    //복사하여 엑셀 붙여넣기 가능
+	clipboard: true,
+	// 행클릭 이벤트
+	rowClick:function(e, row){
+		console.log(row.getData());
+
+		// 테이블의 셀렉트를 없앤다.
+		table.deselectRow();
+		// 선택한 행을 셀렉트한다.
+		row.select();
+    },
+    //행추가 이벤트
+	rowAdded : function (row){
+		console.log("행추가");
+	},
+    columns:[
+    {title:"순번", field:"num"},
+    {title:"회사 코드", field:"companyCode"},
+    {title:"회사 이름", field:"companyName"},
+    {title:"부서 코드", field:"deptCode"},
+    {title:"부서 이름", field:"deptName"}
+    ],
+});
+
+function 그리드_프로퍼티() {
+	console.log("그리드의 전체 행 갯수");
+	console.log(table.getDataCount("active"));
+
+	console.log("그리드의 한 페이지 행 갯수");
+	console.log(table.getPageSize());
+
+	console.log("그리드의 가장 마지막 페이지 번호");
+	console.log(Math.ceil(table.getDataCount("active")/table.getPageSize()));
+}
+
+function 그리드_셀렉트없애기() {
+	// 테이블의 셀렉트를 없앤다.
+	table.deselectRow();
+}
+
+function 그리드_행추가() {
+	//행추가
+	table.addRow();
+	
+	// 페이지 이동 - 10번 페이지로 이동
+	//table.setPage(10);
+
+	// 그리드의 가장 마지막 페이지 번호로 이동
+	table.setPage(Math.ceil(table.getDataCount("active")/table.getPageSize()));
+}
+</script>
+</body>
+</html>
