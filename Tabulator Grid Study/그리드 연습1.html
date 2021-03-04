@@ -9,16 +9,19 @@
 	<button onclick="그리드_프로퍼티()">그리드_프로퍼티</button>
 	<button onclick="그리드_셀렉트없애기()">그리드_셀렉트없애기</button>
 	<button onclick="그리드_행추가()">그리드_행추가</button>
+	<button onclick="선택한_행삭제()">선택한_행삭제</button>
+	<button onclick="선택한_행삭제()">선택한_행삭제</button>
+	<button onclick="새로운_데이터로_렌더링()">새로운_데이터로_렌더링</button>
 <link href="https://unpkg.com/tabulator-tables@4.8.4/dist/css/tabulator_modern.min.css" rel="stylesheet">
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.8.4/dist/js/tabulator.min.js"></script>
 
 <script type="text/javascript">
 var tabledata = [
- 	{num:1,companyCode:"100",companyName:"할로윈",deptCode:"200",deptName:"루돌프"}
+ 	{num:1,companyCode:"100",companyName:"할로윈",deptCode:"200",deptName:"루돌프",tmoney:100000}
  ];
 
  for (var i = 1; i < 10000; i++) {
- 	var data = {num:i+1,companyCode:"100",companyName:"할로윈",deptCode:"200",deptName:"루돌프"};
+ 	var data = {num:i+1,companyCode:"100",companyName:"할로윈",deptCode:"200",deptName:"루돌프",tmoney:100000};
 
  	tabledata.push(data);
  }
@@ -34,8 +37,10 @@ var table = new Tabulator("#GridStudyTable", {
 	paginationAddRow : "table",
 	// 그리드의 높이값을 지정하는 옵션
     height:"311px",
-    //복사하여 엑셀 붙여넣기 가능
+    // 복사하여 엑셀 붙여넣기 가능
 	clipboard: true,
+	// 특정한 컬럼 (여기는 순번)을 인덱스로 지정함 - 이 옵션을 적용하여 인덱스번호를 지칭하여서 특정한 행 데이터를 가져올 수 있다.
+	index:"num",
 	// 행클릭 이벤트
 	rowClick:function(e, row){
 		console.log(row.getData());
@@ -47,14 +52,43 @@ var table = new Tabulator("#GridStudyTable", {
     },
     //행추가 이벤트
 	rowAdded : function (row){
-		console.log("행추가");
+		// 새롭게 추가되는 행에 값을 수정해줌 - 아래는 순번의 셀값을 공백에서 500으로 변경함
+		// row.update({"num":500});
 	},
+	// 셀을 수정하려고 커서가 들어간 순간에 발동하는 이벤트
+	cellEditing:function(cell){
+		console.log("수정 시작");
+	},
+	// 그리드의 컬럼세팅과 로우를 세팅하는 옵션
     columns:[
-    {title:"순번", field:"num"},
-    {title:"회사 코드", field:"companyCode"},
-    {title:"회사 이름", field:"companyName"},
-    {title:"부서 코드", field:"deptCode"},
-    {title:"부서 이름", field:"deptName"}
+    // 컬럼 옵션
+    // title : 컬럼명을 지정함
+    // field : JSON의 어떤 키값과 매칭이 될건지 지정함
+    // headerHozAlign : 헤드의 값을 어느쪽으로 정렬할건지 나타냄 - 지정을 하지않으면 디폴트는 왼쪽 정렬
+    // headerSort : 컬럼의 정렬기능을 켜거나 끌 수 있음 기본은 true
+    // titleFormatter:"rowSelection" 선택된 행을 정렬 할 수 있는 옵션
+    // width : 컬럼의 넓이를 지정하는 옵션
+    // headerFilter:true : 컬럼의 헤더필터를 지정하는 옵션 - 지정을 하지않으면 디폴트는 false
+
+    // 로우 옵션
+    // editor : 행을 수정할수 있게 해주는 옵션 종류는 input,textarea,number,range,tickCross,star,select
+    // align : 행의 셀값을 어느쪽으로 정렬할건지 나타냄 (= hozAlign) - 지정을 하지않으면 디폴트는 왼쪽 정렬
+    // formatter:"rowSelection" 행을 선택 할 수 있는 옵션
+    // formatter:"money" 행의 숫자데이터에 세자리수마다 컴마를 준다. formatterParams: {precision: false} 이 옵션을 지정하여야 소수점을 없앰
+
+    // 로우 이벤트
+    // cellEdited:function(cell){} : 셀의 값을 수정 후에 발생하는 이벤트
+    {formatter:"rowSelection"},
+    {title:"순번", field:"num",width:150},
+    {title:"회사 코드", field:"companyCode",headerSort:false},
+    {title:"회사 이름", field:"companyName",editor:"input",align:"center",
+		cellEdited:function(cell){
+			console.log("수정 후");
+		}
+	},
+    {title:"부서 코드", field:"deptCode",hozAlign:"center",headerHozAlign:"right"},
+    {title:"부서 이름", field:"deptName",headerFilter:true},
+    {title:"돈", field:"tmoney",formatter:"money", formatter:"money", formatterParams: {precision: false}}
     ],
 });
 
@@ -67,6 +101,19 @@ function 그리드_프로퍼티() {
 
 	console.log("그리드의 가장 마지막 페이지 번호");
 	console.log(Math.ceil(table.getDataCount("active")/table.getPageSize()));
+
+	console.log("그리드에서 인덱스를 지정하여서 행 데이터를 가져오는 API : 단 Index가 지정되어 있지 않으면 발동 안함");
+	//console.log(table.getRow(10));
+	// 마지막행의 JSON 데이터를 가져오는 코드
+	console.log(table.getRow(table.getDataCount("active")).getData());
+
+	console.log("그리드의 선택한 모든 행의 JSON 데이터를 가져오는 코드");
+	console.log(table.getSelectedData());
+	console.log(table.getData("selected"));
+
+	console.log("그리드의 선택한 1번째 행의 데이터를 가져오는 코드");
+	console.log(table.getSelectedData()[0]);
+	console.log(table.getData("selected")[0]);
 }
 
 function 그리드_셀렉트없애기() {
@@ -83,6 +130,40 @@ function 그리드_행추가() {
 
 	// 그리드의 가장 마지막 페이지 번호로 이동
 	table.setPage(Math.ceil(table.getDataCount("active")/table.getPageSize()));
+}
+
+function 선택한_행삭제() {
+	var selectedData = table.getSelectedData();
+
+	if(selectedData.lenght < 1)
+		alert("행을 선택하세요.");
+	else
+	{
+		for (var i = 0; i < selectedData.length; i++) {
+			// 인덱스로 지정된 데이터로 삭제한다.
+			table.deleteRow(selectedData[i].num)
+			// 삭제 후 실행할 코드
+			.then(function(){
+				console.log("삭제후 실행");
+			})
+			.catch(function(error){	
+			    console.log(error);
+			});
+		}
+	}
+}
+
+function 새로운_데이터로_렌더링() {
+	var tabledata = [
+ 		{num:1,companyCode:"100",companyName:"성탄절",deptCode:"200",deptName:"산타크로스",tmoney:100000}
+	];
+
+	for (var i = 1; i < 10000; i++) {
+	 	var data = {num:i+1,companyCode:"100",companyName:"성탄절",deptCode:"200",deptName:"산타크로스",tmoney:100000};
+	 	tabledata.push(data);
+	}
+
+	table.setData(tabledata);
 }
 </script>
 </body>
